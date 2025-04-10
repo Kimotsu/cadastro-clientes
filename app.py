@@ -38,10 +38,11 @@ def save_unique_file(file, upload_folder):
 # Função para conectar ao banco de dados
 def get_db_connection():
     conn = mariadb.connect(
-        host="localhost",
-        user="tijolos_user",
-        password="kimi",  # Substitua pela senha correta
-        database="tijolos_cadastro"
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "tijolos_user"),
+        password=os.getenv("DB_PASSWORD", "kimi"),
+        database=os.getenv("DB_NAME", "tijolos_cadastro"),
+        port=int(os.getenv("DB_PORT", 3306))
     )
     return conn
 
