@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Cliente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Barra de Navegação -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Início</a></li>
+            <li><a href="/clientes">Clientes Cadastrados</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Editar Cliente</h1>
+
+        <!-- Formulário de Edição -->
+        <div class="form-section">
+            <form action="/editar/{{ cliente['id'] }}" method="POST">
+                <input type="text" name="nome" value="{{ cliente['nome'] }}" placeholder="Nome do Cliente" required>
+                <input type="text" name="telefone" value="{{ cliente['telefone'] }}" placeholder="Telefone do Cliente (00) 00000-0000" required 
+                       pattern="\(\d{2}\) \d{5}-\d{4}" title="Formato esperado: (00) 00000-0000" id="telefone">
+                <input type="email" name="email" value="{{ cliente['email'] }}" placeholder="Email do Cliente" required>
+                <input type="text" name="cidade_origem" value="{{ cliente['cidade_origem'] }}" placeholder="Cidade de Origem" required>
+                <input type="text" name="cidade_obra" value="{{ cliente['cidade_obra'] }}" placeholder="Cidade da Obra" required>
+                <input type="number" name="quantidade_tijolos" value="{{ cliente['quantidade_tijolos'] }}" placeholder="Quantidade de Tijolos" required>
+                <input type="text" name="cpf_cnpj" value="{{ cliente['cpf_cnpj'] }}" placeholder="CPF ou CNPJ" required id="cpf-cnpj" maxlength="18">
+                <textarea name="observacao" placeholder="Observação (máximo 1500 caracteres)" maxlength="1500" style="height: 150px; resize: none;">{{ cliente['observacao'] }}</textarea>
+                
+                <label>Como nos encontrou?</label>
+                <div class="options">
+                    <label>
+                        <input type="radio" name="origem_cliente" value="telefone" 
+                               {% if cliente['origem_cliente'] == 'telefone' %}checked{% endif %}>
+                        Telefone
+                    </label>
+                    <label>
+                        <input type="radio" name="origem_cliente" value="google" 
+                               {% if cliente['origem_cliente'] == 'google' %}checked{% endif %}>
+                        Google
+                    </label>
+                    <label>
+                        <input type="radio" name="origem_cliente" value="facebook" 
+                               {% if cliente['origem_cliente'] == 'facebook' %}checked{% endif %}>
+                        Facebook
+                    </label>
+                    <label>
+                        <input type="radio" name="origem_cliente" value="instagram" 
+                               {% if cliente['origem_cliente'] == 'instagram' %}checked{% endif %}>
+                        Instagram
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-submit">Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Formatar telefone automaticamente
+        document.getElementById('telefone').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+            if (value.length > 11) value = value.slice(0, 11); // Limita a 11 dígitos
+            if (value.length > 6) {
+                e.target.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+            } else if (value.length > 2) {
+                e.target.value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+            } else {
+                e.target.value = value;
+            }
+        });
+    </script>
+    <script>
+        // Formatar CPF ou CNPJ automaticamente
+        document.getElementById('cpf-cnpj').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+
+            if (value.length <= 11) {
+                // Formatar como CPF: 000.000.000-00
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                // Formatar como CNPJ: 00.000.000/0000-00
+                value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+
+            e.target.value = value.slice(0, 18); // Limita o tamanho máximo a 18 caracteres
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Clientes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Barra de Navegação -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Início</a></li>
+            <li><a href="/clientes">Clientes Cadastrados</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Cadastro de Clientes</h1>
+
+        <!-- Formulário de Cadastro -->
+        <div class="form-section">
+            <form action="/cadastro" method="POST" enctype="multipart/form-data" id="cadastro-form">
+                <!-- Nome -->
+                <input type="text" name="nome" placeholder="Nome do Cliente" required>
+
+                <!-- Telefone e Email -->
+                <div class="form-row">
+                    <input type="text" name="telefone" placeholder="Telefone (00) 00000-0000" required 
+                           pattern="\(\d{2}\) \d{5}-\d{4}" title="Formato esperado: (00) 00000-0000" id="telefone">
+                    <input type="email" name="email" placeholder="Email do Cliente" required>
+                </div>
+
+                <!-- Cidade de Origem e Cidade da Obra -->
+                <div class="form-row">
+                    <input type="text" name="cidade_origem" placeholder="Cidade de Origem" required>
+                    <input type="text" name="cidade_obra" placeholder="Cidade da Obra" required>
+                </div>
+
+                <!-- Quantidade de Tijolos e Valor -->
+                <div class="form-row">
+                    <input type="number" name="quantidade_tijolos" placeholder="Quantidade de Tijolos" required id="quantidade_tijolos">
+                    <input type="text" name="valor" placeholder="Valor Total (calculado automaticamente)" id="valor">
+                </div>
+
+                <!-- CPF ou CNPJ -->
+                <div class="form-row">
+                    <input type="text" name="cpf_cnpj" placeholder="CPF ou CNPJ" required id="cpf-cnpj" maxlength="18">
+                </div>
+
+                <!-- Observação -->
+                <textarea name="observacao" placeholder="Observação (máximo 1500 caracteres)" maxlength="1500" style="height: 150px; resize: none;"></textarea>
+
+                <!-- Como nos encontrou -->
+                <div class="form-group">
+                    <label>Como nos encontrou?</label>
+                    <div class="options">
+                        <label><input type="radio" name="origem_cliente" value="telefone" required> Telefone</label>
+                        <label><input type="radio" name="origem_cliente" value="google"> Google</label>
+                        <label><input type="radio" name="origem_cliente" value="facebook"> Facebook</label>
+                        <label><input type="radio" name="origem_cliente" value="instagram"> Instagram</label>
+                    </div>
+                </div>
+
+                <!-- Documento -->
+                <div class="file-input">
+                    <label for="documento">Anexar Documento:</label>
+                    <input type="file" name="documento" id="documento" accept=".txt,.pdf,.jpeg,.jpg,.png">
+                </div>
+
+                <!-- Botões -->
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">Cadastrar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Formatar telefone automaticamente
+        document.getElementById('telefone').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+            if (value.length > 11) value = value.slice(0, 11); // Limita a 11 dígitos
+            if (value.length > 6) {
+                e.target.value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+            } else if (value.length > 2) {
+                e.target.value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+            } else {
+                e.target.value = value;
+            }
+        });
+
+        // Atualizar o valor automaticamente com base na quantidade de tijolos
+        document.getElementById('quantidade_tijolos').addEventListener('input', function () {
+            const quantidade = parseInt(this.value) || 0;
+            const valor = quantidade * 2; // R$ 2,00 por tijolo
+            const valorInput = document.getElementById('valor');
+            valorInput.value = `R$ ${valor.toFixed(2)}`;
+        });
+
+        // Formatar CPF ou CNPJ automaticamente
+        document.getElementById('cpf-cnpj').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+
+            if (value.length <= 11) {
+                // Formatar como CPF: 000.000.000-00
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                // Formatar como CNPJ: 00.000.000/0000-00
+                value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+
+            e.target.value = value.slice(0, 18); // Limita o tamanho máximo a 18 caracteres
+        });
+    </script>
+</body>
+</html>

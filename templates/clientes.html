@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes Cadastrados</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Barra de Navegação -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="/">Início</a></li>
+            <li><a href="/clientes">Clientes Cadastrados</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Clientes Cadastrados</h1>
+
+        <!-- Mensagens Flash -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Barra de Pesquisa -->
+        <div class="search-bar">
+            <form action="/clientes" method="GET">
+                <input type="text" name="termo" placeholder="Pesquisar cliente" value="{{ termo }}">
+                <button type="submit" class="btn btn-search">Pesquisar</button>
+            </form>
+            <a href="/exportar" class="export-button">Exportar para Excel</a>
+        </div>
+
+        <!-- Tabela de Clientes -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Email</th>
+                        <th>Cidade de Origem</th>
+                        <th>Cidade da Obra</th>
+                        <th>Qtd. Tijolos</th>
+                        <th>Valor</th>
+                        <th>Observação</th>
+                        <th>Origem</th>
+                        <th>CPF/CNPJ</th>
+                        <th>Anexo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td>{{ cliente['nome'] }}</td>
+                        <td>{{ cliente['telefone'] }}</td>
+                        <td>{{ cliente['email'] }}</td>
+                        <td>{{ cliente['cidade_origem'] }}</td>
+                        <td>{{ cliente['cidade_obra'] }}</td>
+                        <td>{{ cliente['quantidade_tijolos'] }}</td>
+                        <td>R$ {{ "%.2f"|format(cliente['valor']) }}</td>
+                        <td>{{ cliente['observacao'] }}</td>
+                        <td>{{ cliente['origem_cliente'] }}</td>
+                        <td>{{ cliente['cpf_cnpj'] }}</td>
+                        <td>
+                            {% if cliente['documento'] %}
+                                Sim (<a href="{{ url_for('download_file', filename=cliente['documento'].split('/')[-1]) }}" download>Baixar</a>)
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/editar/{{ cliente['id'] }}" class="btn btn-edit">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="#" class="btn btn-generate" onclick="abrirModal({{ cliente['id'] }})">
+                                <i class="fas fa-file-contract"></i> Gerar Contrato
+                            </a>
+                            <form action="/excluir/{{ cliente['id'] }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-delete" title="Excluir">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para solicitar o valor antecipado -->
+    <div id="modal-valor-antecipado" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModal()">&times;</span>
+            <h2>Informe o Valor Antecipado</h2>
+            <input type="number" id="valor-antecipado" placeholder="Valor antecipado (em R$)" required>
+            <button class="btn-submit" onclick="confirmarValorAntecipado()">Confirmar</button>
+        </div>
+    </div>
+
+    <script>
+        let clienteIdSelecionado = null;
+
+        function abrirModal(clienteId) {
+            clienteIdSelecionado = clienteId; // Armazena o ID do cliente selecionado
+            document.getElementById('modal-valor-antecipado').style.display = 'block';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-valor-antecipado').style.display = 'none';
+            clienteIdSelecionado = null; // Reseta o ID do cliente selecionado
+        }
+
+        function confirmarValorAntecipado() {
+            const valorAntecipado = document.getElementById('valor-antecipado').value.trim();
+            if (valorAntecipado === '' || isNaN(valorAntecipado) || parseFloat(valorAntecipado) <= 0) {
+                alert('Por favor, insira um valor válido.');
+                return;
+            }
+
+            // Redirecionar para a rota de geração de contrato com o valor antecipado
+            window.location.href = `/gerar-contrato/${clienteIdSelecionado}?valor_antecipado=${encodeURIComponent(valorAntecipado)}`;
+        }
+
+        // Fechar o modal ao clicar fora dele
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal-valor-antecipado');
+            if (event.target === modal) {
+                fecharModal();
+            }
+        };
+    </script>
+</body>
+</html>
