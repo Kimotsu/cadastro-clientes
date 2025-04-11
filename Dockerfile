@@ -11,10 +11,11 @@ COPY . /app
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
+    python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
 # Cria um ambiente virtual e instala as dependências do Python
-RUN python -m venv /opt/venv && \
+RUN python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install -r requirements.txt
 
