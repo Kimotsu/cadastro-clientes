@@ -7,15 +7,9 @@ WORKDIR /app
 # Copia os arquivos do projeto para o container
 COPY . /app
 
-# Instala as dependências do sistema necessárias
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
-
-# Cria um ambiente virtual e instala as dependências do Python
-RUN python3 -m venv /opt/venv && \
+# Instala as dependências do sistema necessárias e configura o ambiente virtual
+RUN apt-get update && apt-get install -y python3-venv && \
+    python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
     /opt/venv/bin/pip install -r requirements.txt
 
